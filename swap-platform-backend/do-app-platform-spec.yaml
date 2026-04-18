@@ -1,0 +1,35 @@
+name: swap-platform-backend
+services:
+  - name: api
+    environment_slug: python
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: your-github-account/swap-platform-backend
+    build_command: pip install -r requirements.txt && alembic upgrade head
+    run_command: uvicorn app.main:app --host 0.0.0.0 --port 8080
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    envs:
+      - key: SECRET_KEY
+        scope: RUN_AND_BUILD_TIME
+        value: replace-me
+      - key: DATABASE_URL
+        scope: RUN_AND_BUILD_TIME
+        value: ${db.DATABASE_URL}
+      - key: CORS_ORIGINS
+        scope: RUN_AND_BUILD_TIME
+        value: https://www.yoursite.com,http://localhost:3000
+      - key: ENVIRONMENT
+        scope: RUN_AND_BUILD_TIME
+        value: production
+      - key: API_V1_PREFIX
+        scope: RUN_AND_BUILD_TIME
+        value: /api/v1
+
+databases:
+  - name: db
+    engine: PG
+    production: true
+    version: '16'
