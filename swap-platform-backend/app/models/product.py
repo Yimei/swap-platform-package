@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, JSON, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -18,6 +18,7 @@ class Product(Base):
     condition: Mapped[str] = mapped_column(String(60), nullable=False)
     city: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    image_urls: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list, server_default='[]')
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default='true')
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

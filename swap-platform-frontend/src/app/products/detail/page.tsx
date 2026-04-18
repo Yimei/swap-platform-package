@@ -50,7 +50,8 @@ function ProductDetailContent() {
     );
   }
 
-  const imageSrc = product.image_url || '/placeholder-product.svg';
+  const imageUrls = product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : [];
+  const imageSrc = imageUrls[0] || '/placeholder-product.svg';
 
   return (
     <article className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
@@ -74,6 +75,16 @@ function ProductDetailContent() {
           <DetailItem label="Condition" value={product.condition} />
           <DetailItem label="City" value={product.city} />
         </div>
+
+        {imageUrls.length > 1 ? (
+          <div className="grid grid-cols-3 gap-3">
+            {imageUrls.slice(1).map((url) => (
+              <div key={url} className="relative aspect-square overflow-hidden rounded-2xl bg-neutral-100">
+                <Image src={url} alt={product.title} fill className="object-cover" />
+              </div>
+            ))}
+          </div>
+        ) : null}
       </section>
     </article>
   );

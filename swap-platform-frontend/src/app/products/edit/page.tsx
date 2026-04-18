@@ -14,7 +14,7 @@ type ProductForm = {
   point_price: number;
   condition: string;
   city: string;
-  image_url: string;
+  image_urls: string[];
 };
 
 const emptyForm: ProductForm = {
@@ -24,10 +24,12 @@ const emptyForm: ProductForm = {
   point_price: 0,
   condition: '',
   city: '',
-  image_url: '',
+  image_urls: ['', '', '', '', '', ''],
 };
 
 function toForm(product: Product): ProductForm {
+  const imageUrls = product.image_urls?.length ? product.image_urls : product.image_url ? [product.image_url] : [];
+
   return {
     title: product.title,
     description: product.description,
@@ -35,7 +37,7 @@ function toForm(product: Product): ProductForm {
     point_price: product.point_price,
     condition: product.condition,
     city: product.city,
-    image_url: product.image_url || '',
+    image_urls: [...imageUrls, '', '', '', '', '', ''].slice(0, 6),
   };
 }
 
@@ -82,9 +84,11 @@ function ProductEditContent() {
 
     setSaving(true);
     try {
+      const imageUrls = form.image_urls.map((url) => url.trim()).filter(Boolean).slice(0, 6);
       await updateProduct(token, productId, {
         ...form,
-        image_url: form.image_url || undefined,
+        image_url: imageUrls[0],
+        image_urls: imageUrls,
       });
       setMessage('Product updated.');
     } catch (err) {
@@ -131,7 +135,24 @@ function ProductEditContent() {
         <input className="rounded-2xl border border-neutral-300 px-4 py-3" placeholder="Point price" type="number" min="0" value={form.point_price} onChange={(event) => setForm({ ...form, point_price: Number(event.target.value) })} required />
       </div>
 
-      <input className="w-full rounded-2xl border border-neutral-300 px-4 py-3" placeholder="Image URL" value={form.image_url} onChange={(event) => setForm({ ...form, image_url: event.target.value })} />
+      <div className="space-y-3">
+        <p className="text-sm font-semibold text-neutral-700">Image URLs, up to 6</p>
+        <div className="grid gap-3 md:grid-cols-2">
+          {form.image_urls.map((url, index) => (
+            <input
+              key={index}
+              className="rounded-2xl border border-neutral-300 px-4 py-3"
+              placeholder={`Image URL ${index + 1}`}
+              value={url}
+              onChange={(event) => {
+                const imageUrls = [...form.image_urls];
+                imageUrls[index] = event.target.value;
+                setForm({ ...form, image_urls: imageUrls });
+              }}
+            />
+          ))}
+        </div>
+      </div>
 
       <button disabled={saving} className="rounded-2xl bg-neutral-900 px-5 py-3 font-semibold text-white disabled:opacity-60">
         {saving ? 'Saving...' : 'Save changes'}

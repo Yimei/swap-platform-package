@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { Product } from '@/lib/types';
 
 export function ProductCard({ product }: { product: Product }) {
-  const imageSrc = product.image_url || '/placeholder-product.svg';
+  const imageSrc = product.image_urls?.[0] || product.image_url || '/placeholder-product.svg';
 
   return (
     <article className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">

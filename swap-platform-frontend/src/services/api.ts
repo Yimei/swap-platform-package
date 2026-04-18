@@ -59,6 +59,7 @@ export async function createProduct(
     condition: string;
     city: string;
     image_url?: string;
+    image_urls?: string[];
   },
 ): Promise<Product> {
   return request<Product>('/api/v1/products', {
@@ -81,6 +82,7 @@ export async function updateProduct(
     condition: string;
     city: string;
     image_url?: string;
+    image_urls?: string[];
   },
 ): Promise<Product> {
   return request<Product>(`/api/v1/products/${productId}`, {

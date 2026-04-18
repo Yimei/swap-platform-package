@@ -12,6 +12,7 @@ const defaultProduct = {
   condition: '九成新',
   city: '台北市',
   image_url: '',
+  image_urls: ['', '', '', '', '', ''],
 };
 
 export function AuthPanel() {
@@ -62,7 +63,12 @@ export function AuthPanel() {
       if (!currentToken) {
         throw new Error('請先登入，瀏覽器內沒有可用 token。');
       }
-      await createProduct(currentToken, productForm);
+      const imageUrls = productForm.image_urls.map((url) => url.trim()).filter(Boolean).slice(0, 6);
+      await createProduct(currentToken, {
+        ...productForm,
+        image_url: imageUrls[0],
+        image_urls: imageUrls,
+      });
       setMessage('商品建立成功，請到商品列表頁重新整理查看。');
       setProductForm(defaultProduct);
     } catch (error) {
@@ -101,7 +107,24 @@ export function AuthPanel() {
           <input className="rounded-2xl border border-neutral-300 px-4 py-3" placeholder="狀況" value={productForm.condition} onChange={(e) => setProductForm({ ...productForm, condition: e.target.value })} required />
           <input className="rounded-2xl border border-neutral-300 px-4 py-3" placeholder="點數" type="number" value={productForm.point_price} onChange={(e) => setProductForm({ ...productForm, point_price: Number(e.target.value) })} required />
         </div>
-        <input className="w-full rounded-2xl border border-neutral-300 px-4 py-3" placeholder="圖片 URL（可空白）" value={productForm.image_url} onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })} />
+        <div className="space-y-3">
+          <p className="text-sm font-semibold text-neutral-700">圖片 URL，最多 6 張</p>
+          <div className="grid gap-3">
+            {productForm.image_urls.map((url, index) => (
+              <input
+                key={index}
+                className="w-full rounded-2xl border border-neutral-300 px-4 py-3"
+                placeholder={`圖片 URL ${index + 1}`}
+                value={url}
+                onChange={(e) => {
+                  const imageUrls = [...productForm.image_urls];
+                  imageUrls[index] = e.target.value;
+                  setProductForm({ ...productForm, image_urls: imageUrls });
+                }}
+              />
+            ))}
+          </div>
+        </div>
         <button disabled={loading} className="w-full rounded-2xl bg-lime-600 px-4 py-3 font-semibold text-white">送出商品到 API</button>
       </form>
 

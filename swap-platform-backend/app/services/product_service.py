@@ -17,15 +17,25 @@ class ProductService:
         statement = select(Product).where(Product.id == product_id, Product.is_active.is_(True))
         return self.db.scalar(statement)
 
+    def _product_data(self, payload: ProductCreate | ProductUpdate) -> dict:
+        data = payload.model_dump()
+        image_urls = data.get('image_urls') or []
+        if data.get('image_url') and data['image_url'] not in image_urls:
+            image_urls = [data['image_url'], *image_urls]
+        image_urls = image_urls[:6]
+        data['image_urls'] = image_urls
+        data['image_url'] = image_urls[0] if image_urls else None
+        return data
+
     def create_product(self, owner_id: int, payload: ProductCreate) -> Product:
-        product = Product(owner_id=owner_id, **payload.model_dump())
+        product = Product(owner_id=owner_id, **self._product_data(payload))
         self.db.add(product)
         self.db.commit()
         self.db.refresh(product)
         return product
 
     def update_product(self, product: Product, payload: ProductUpdate) -> Product:
-        for field, value in payload.model_dump().items():
+        for field, value in self._product_data(payload).items():
             setattr(product, field, value)
         self.db.commit()
         self.db.refresh(product)
