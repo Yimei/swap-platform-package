@@ -23,6 +23,10 @@ export async function fetchProducts(): Promise<Product[]> {
   return request<Product[]>('/api/v1/products');
 }
 
+export async function fetchProduct(productId: number): Promise<Product> {
+  return request<Product>(`/api/v1/products/${productId}`);
+}
+
 export async function registerUser(payload: { name: string; email: string; password: string }) {
   return request<{ id: number; email: string; name: string }>('/api/v1/auth/register', {
     method: 'POST',

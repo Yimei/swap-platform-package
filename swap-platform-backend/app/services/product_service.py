@@ -13,6 +13,10 @@ class ProductService:
         statement = select(Product).where(Product.is_active.is_(True)).order_by(Product.created_at.desc())
         return list(self.db.scalars(statement).all())
 
+    def get_active_product(self, product_id: int) -> Product | None:
+        statement = select(Product).where(Product.id == product_id, Product.is_active.is_(True))
+        return self.db.scalar(statement)
+
     def create_product(self, owner_id: int, payload: ProductCreate) -> Product:
         product = Product(owner_id=owner_id, **payload.model_dump())
         self.db.add(product)

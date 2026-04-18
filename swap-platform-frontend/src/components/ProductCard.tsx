@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import type { Product } from '@/lib/types';
 
 export function ProductCard({ product }: { product: Product }) {
@@ -11,7 +12,11 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="space-y-3 p-5">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-lg font-semibold text-neutral-900">{product.title}</h3>
+          <h3 className="text-lg font-semibold text-neutral-900">
+            <Link href={`/products/detail?id=${product.id}`} className="hover:text-emerald-700">
+              {product.title}
+            </Link>
+          </h3>
           <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
             {product.point_price} 點
           </span>
@@ -22,6 +27,12 @@ export function ProductCard({ product }: { product: Product }) {
           <span className="rounded-full bg-neutral-100 px-3 py-1">{product.condition}</span>
           <span className="rounded-full bg-neutral-100 px-3 py-1">{product.city}</span>
         </div>
+        <Link
+          href={`/products/detail?id=${product.id}`}
+          className="inline-flex rounded-2xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white"
+        >
+          View details
+        </Link>
       </div>
     </article>
   );
