@@ -69,3 +69,25 @@ export async function createProduct(
     body: JSON.stringify(payload),
   });
 }
+
+export async function updateProduct(
+  token: string,
+  productId: number,
+  payload: {
+    title: string;
+    description: string;
+    category: string;
+    point_price: number;
+    condition: string;
+    city: string;
+    image_url?: string;
+  },
+): Promise<Product> {
+  return request<Product>(`/api/v1/products/${productId}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+}

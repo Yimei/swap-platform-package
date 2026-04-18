@@ -13,6 +13,10 @@ class ProductCreate(BaseModel):
     image_url: str | None = Field(default=None, max_length=500)
 
 
+class ProductUpdate(ProductCreate):
+    pass
+
+
 class ProductResponse(BaseModel):
     id: int
     title: str

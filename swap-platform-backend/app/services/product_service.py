@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.product import Product
-from app.schemas.product import ProductCreate
+from app.schemas.product import ProductCreate, ProductUpdate
 
 
 class ProductService:
@@ -20,6 +20,13 @@ class ProductService:
     def create_product(self, owner_id: int, payload: ProductCreate) -> Product:
         product = Product(owner_id=owner_id, **payload.model_dump())
         self.db.add(product)
+        self.db.commit()
+        self.db.refresh(product)
+        return product
+
+    def update_product(self, product: Product, payload: ProductUpdate) -> Product:
+        for field, value in payload.model_dump().items():
+            setattr(product, field, value)
         self.db.commit()
         self.db.refresh(product)
         return product

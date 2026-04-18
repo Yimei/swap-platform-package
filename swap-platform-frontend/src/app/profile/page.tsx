@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { ProductList } from '@/components/ProductList';
 import type { UserProfile } from '@/lib/types';
 import { getToken } from '@/lib/storage';
 import { fetchUserProfile } from '@/services/api';
@@ -75,7 +74,33 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        <ProductList products={profile.products} />
+        {profile.products.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-neutral-300 bg-white p-10 text-center text-neutral-600">
+            You have not listed any products yet.
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {profile.products.map((product) => (
+              <article key={product.id} className="flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-5 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900">{product.title}</h3>
+                  <p className="mt-1 text-sm text-neutral-600">
+                    {product.category} / {product.condition} / {product.city}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-emerald-700">{product.point_price} coins</p>
+                </div>
+                <div className="flex gap-3">
+                  <Link href={`/products/detail?id=${product.id}`} className="rounded-2xl border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-800">
+                    View
+                  </Link>
+                  <Link href={`/products/edit?id=${product.id}`} className="rounded-2xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white">
+                    Edit
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
