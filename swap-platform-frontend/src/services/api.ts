@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@/lib/config';
-import type { LoginResponse, Product } from '@/lib/types';
+import type { LoginResponse, Product, UserProfile } from '@/lib/types';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -38,6 +38,14 @@ export async function loginUser(payload: { email: string; password: string }): P
   return request<LoginResponse>('/api/v1/auth/login', {
     method: 'POST',
     body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchUserProfile(token: string): Promise<UserProfile> {
+  return request<UserProfile>('/api/v1/auth/me', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 }
 
