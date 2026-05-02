@@ -1,7 +1,7 @@
 from functools import lru_cache
-from typing import List
+import json
 
-from pydantic import Field, field_validator
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,17 +14,24 @@ class Settings(BaseSettings):
     secret_key: str = 'change-this-to-a-long-random-secret'
     access_token_expire_minutes: int = 60 * 24 * 7
     database_url: str = 'postgresql+psycopg2://postgres:postgres@localhost:5432/swap_platform'
-    cors_origins: list[str] = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ]
+    cors_origins_raw: str = Field(
+        default='http://localhost:3000,http://127.0.0.1:3000',
+        validation_alias='CORS_ORIGINS',
+    )
 
-    @field_validator('cors_origins', mode='before')
-    @classmethod
-    def parse_cors_origins(cls, value: List[str] | str):
-        if isinstance(value, str):
-            return [origin.strip() for origin in value.split(',') if origin.strip()]
-        return value
+    @property
+    def cors_origins(self) -> list[str]:
+        value = self.cors_origins_raw.strip()
+        if not value:
+            return []
+
+        if value.startswith('['):
+            parsed = json.loads(value)
+            if not isinstance(parsed, list):
+                raise ValueError('CORS_ORIGINS JSON value must be a list.')
+            return [str(origin).strip() for origin in parsed if str(origin).strip()]
+
+        return [origin.strip() for origin in value.split(',') if origin.strip()]
 
 
 @lru_cache
