@@ -1,4 +1,4 @@
-import { getToken } from '@/lib/storage';
+import { getCurrentUserId } from '@/lib/storage';
 
 const FAVORITE_PRODUCT_IDS_KEY = 'swap_platform_favorite_product_ids';
 
@@ -6,17 +6,8 @@ export const FAVORITES_CHANGED_EVENT = 'swap-platform-favorites-changed';
 export const MAX_FAVORITE_PRODUCTS = 30;
 
 function getStorageKey(): string | null {
-  const token = getToken();
-  if (!token) return null;
-
-  try {
-    const payload = token.split('.')[1];
-    const normalizedPayload = payload.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(payload.length / 4) * 4, '=');
-    const subject = JSON.parse(atob(normalizedPayload)).sub;
-    return subject ? `${FAVORITE_PRODUCT_IDS_KEY}:${subject}` : null;
-  } catch {
-    return null;
-  }
+  const userId = getCurrentUserId();
+  return userId ? `${FAVORITE_PRODUCT_IDS_KEY}:${userId}` : null;
 }
 
 export function getFavoriteProductIds(): number[] {

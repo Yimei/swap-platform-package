@@ -6,13 +6,14 @@ import { ProductList } from '@/components/ProductList';
 import { FAVORITES_CHANGED_EVENT, getFavoriteProductIds, MAX_FAVORITE_PRODUCTS } from '@/lib/favorites';
 import type { Product, UserProfile } from '@/lib/types';
 import { getToken } from '@/lib/storage';
-import { fetchProducts, fetchUserProfile } from '@/services/api';
+import { deleteProduct, fetchProducts, fetchUserProfile } from '@/services/api';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -24,14 +25,20 @@ export default function ProfilePage() {
       }
 
       try {
-        const [profileData, products] = await Promise.all([fetchUserProfile(token), fetchProducts()]);
+        const profileData = await fetchUserProfile(token);
         setProfile(profileData);
-        const favoriteIds = new Set(getFavoriteProductIds());
-        setFavoriteProducts(products.filter((product) => favoriteIds.has(product.id)));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unable to load profile.');
       } finally {
         setLoading(false);
+      }
+
+      try {
+        const products = await fetchProducts();
+        const favoriteIds = new Set(getFavoriteProductIds());
+        setFavoriteProducts(products.filter((product) => favoriteIds.has(product.id)));
+      } catch {
+        setFavoriteProducts([]);
       }
     }
 
@@ -40,6 +47,30 @@ export default function ProfilePage() {
     window.addEventListener(FAVORITES_CHANGED_EVENT, loadProfile);
     return () => window.removeEventListener(FAVORITES_CHANGED_EVENT, loadProfile);
   }, []);
+
+  async function handleDeleteProduct(product: Product) {
+    if (!window.confirm(`確定要刪除「${product.title}」嗎？`)) return;
+
+    const token = getToken();
+    if (!token) {
+      setError('請先登入。');
+      return;
+    }
+
+    setDeletingProductId(product.id);
+    setError('');
+    try {
+      await deleteProduct(token, product.id);
+      setProfile((currentProfile) => currentProfile
+        ? { ...currentProfile, products: currentProfile.products.filter((item) => item.id !== product.id) }
+        : currentProfile);
+      setFavoriteProducts((products) => products.filter((item) => item.id !== product.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '無法刪除商品。');
+    } finally {
+      setDeletingProductId(null);
+    }
+  }
 
   if (loading) {
     return <div className="rounded-2xl border border-neutral-200 bg-white px-5 py-4">Loading profile...</div>;
@@ -104,6 +135,14 @@ export default function ProfilePage() {
                   <Link href={`/products/edit?id=${product.id}`} className="rounded-2xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white">
                     Edit
                   </Link>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteProduct(product)}
+                    disabled={deletingProductId === product.id}
+                    className="rounded-2xl border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-700 disabled:opacity-60"
+                  >
+                    {deletingProductId === product.id ? '刪除中...' : '刪除'}
+                  </button>
                 </div>
               </article>
             ))}

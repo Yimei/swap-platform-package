@@ -3,13 +3,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import type { Product } from '@/lib/types';
+import { useRouter, useSearchParams } from 'next/navigation';
+import type { Product, SellerContact } from '@/lib/types';
 import { isFavoriteProduct, toggleFavoriteProduct } from '@/lib/favorites';
-import { getToken } from '@/lib/storage';
-import { fetchProduct } from '@/services/api';
+import { getCurrentUserId, getToken } from '@/lib/storage';
+import { deleteProduct, fetchProduct, fetchSellerContact } from '@/services/api';
 
 function ProductDetailContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const productId = Number(searchParams.get('id'));
   const [product, setProduct] = useState<Product | null>(null);
@@ -17,6 +18,11 @@ function ProductDetailContent() {
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteMessage, setFavoriteMessage] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [sellerContact, setSellerContact] = useState<SellerContact | null>(null);
+  const [loadingContact, setLoadingContact] = useState(false);
+  const [contactMessage, setContactMessage] = useState('');
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   useEffect(() => {
     async function loadProduct() {
@@ -38,6 +44,7 @@ function ProductDetailContent() {
     }
 
     loadProduct();
+    setCurrentUserId(getCurrentUserId());
   }, [productId]);
 
   if (loading) {
@@ -71,6 +78,43 @@ function ProductDetailContent() {
       setFavoriteMessage(nextIsFavorite ? '已加入我的收藏。' : '已取消收藏。');
     } catch (err) {
       setFavoriteMessage(err instanceof Error ? err.message : '無法收藏商品。');
+    }
+  }
+
+  async function handleDelete() {
+    if (!product || !window.confirm(`確定要刪除「${product.title}」嗎？`)) return;
+
+    const token = getToken();
+    if (!token) return;
+
+    setDeleting(true);
+    setError('');
+    try {
+      await deleteProduct(token, product.id);
+      router.push('/profile');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '無法刪除商品。');
+      setDeleting(false);
+    }
+  }
+
+  async function handleContactSeller() {
+    if (!product) return;
+
+    const token = getToken();
+    if (!token) {
+      setContactMessage('請先登入才能聯絡賣家。');
+      return;
+    }
+
+    setLoadingContact(true);
+    setContactMessage('');
+    try {
+      setSellerContact(await fetchSellerContact(token, product.id));
+    } catch (err) {
+      setContactMessage(err instanceof Error ? err.message : '無法取得賣家聯絡方式。');
+    } finally {
+      setLoadingContact(false);
     }
   }
 
@@ -109,6 +153,44 @@ function ProductDetailContent() {
           </button>
           {favoriteMessage ? <p className="text-sm text-neutral-600">{favoriteMessage}</p> : null}
         </div>
+
+        {currentUserId !== product.owner_id ? (
+          <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <h2 className="text-lg font-bold text-emerald-900">交換與聯絡</h2>
+            <button
+              type="button"
+              onClick={handleContactSeller}
+              disabled={loadingContact}
+              className="rounded-2xl bg-emerald-600 px-5 py-3 font-semibold text-white disabled:opacity-60"
+            >
+              {loadingContact ? '取得聯絡方式中...' : '我要交換／聯絡賣家'}
+            </button>
+            {contactMessage ? <p className="text-sm text-rose-700">{contactMessage}</p> : null}
+            {sellerContact ? (
+              <div className="space-y-2 text-neutral-700">
+                <p>賣家：{sellerContact.name}</p>
+                <p>Email：{sellerContact.email}</p>
+                <a
+                  href={`mailto:${sellerContact.email}?subject=${encodeURIComponent(`想交換商品：${product.title}`)}`}
+                  className="inline-flex rounded-2xl border border-emerald-300 px-4 py-2 text-sm font-semibold text-emerald-800"
+                >
+                  寄 Email 給賣家
+                </a>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {currentUserId === product.owner_id ? (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="rounded-2xl border border-rose-300 px-5 py-3 font-semibold text-rose-700 disabled:opacity-60"
+          >
+            {deleting ? '刪除中...' : '刪除商品'}
+          </button>
+        ) : null}
       </section>
     </article>
   );

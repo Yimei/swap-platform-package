@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import type { Product } from '@/lib/types';
 import { fetchProducts } from '@/services/api';
 import { ProductList } from '@/components/ProductList';
+import { AUTH_CHANGED_EVENT, getCurrentUserId } from '@/lib/storage';
 
 export function HomeProductSearch() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -11,6 +12,7 @@ export function HomeProductSearch() {
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   useEffect(() => {
     async function loadProducts() {
@@ -24,17 +26,26 @@ export function HomeProductSearch() {
     }
 
     loadProducts();
+
+    function syncCurrentUser() {
+      setCurrentUserId(getCurrentUserId());
+    }
+
+    syncCurrentUser();
+    window.addEventListener(AUTH_CHANGED_EVENT, syncCurrentUser);
+    return () => window.removeEventListener(AUTH_CHANGED_EVENT, syncCurrentUser);
   }, []);
 
   const filteredProducts = useMemo(() => {
     const keyword = query.trim().toLocaleLowerCase();
-    if (!keyword) return products;
+    const otherUsersProducts = currentUserId ? products.filter((product) => product.owner_id !== currentUserId) : products;
+    if (!keyword) return otherUsersProducts;
 
-    return products.filter((product) =>
+    return otherUsersProducts.filter((product) =>
       [product.title, product.description, product.category, product.condition, product.city]
         .some((value) => value.toLocaleLowerCase().includes(keyword)),
     );
-  }, [products, query]);
+  }, [currentUserId, products, query]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

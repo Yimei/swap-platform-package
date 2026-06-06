@@ -30,3 +30,7 @@ class ProductService:
         self.db.commit()
         self.db.refresh(product)
         return product
+
+    def delete_product(self, product: Product) -> None:
+        self.db.delete(product)
+        self.db.commit()

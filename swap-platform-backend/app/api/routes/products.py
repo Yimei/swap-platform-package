@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
+from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate, SellerContactResponse
 from app.services.product_service import ProductService
 
 router = APIRouter(prefix='/products', tags=['products'])
@@ -23,6 +23,21 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Product not found.')
     return product
+
+
+@router.get('/{product_id}/seller-contact', response_model=SellerContactResponse)
+def get_seller_contact(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    service = ProductService(db)
+    product = service.get_active_product(product_id)
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Product not found.')
+    if product.owner_id == current_user.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='This is your own product.')
+    return SellerContactResponse(name=product.owner.name, email=product.owner.email)
 
 
 @router.post('', response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
@@ -49,3 +64,18 @@ def update_product(
     if product.owner_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='You can only edit your own products.')
     return service.update_product(product=product, payload=payload)
+
+
+@router.delete('/{product_id}', status_code=status.HTTP_204_NO_CONTENT)
+def delete_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    service = ProductService(db)
+    product = service.get_active_product(product_id)
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Product not found.')
+    if product.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='You can only delete your own products.')
+    service.delete_product(product)

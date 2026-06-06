@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@/lib/config';
-import type { LoginResponse, Product, UserProfile, WishlistItem } from '@/lib/types';
+import type { LoginResponse, Product, SellerContact, UserProfile, WishlistItem } from '@/lib/types';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -29,6 +29,14 @@ export async function fetchProducts(): Promise<Product[]> {
 
 export async function fetchProduct(productId: number): Promise<Product> {
   return request<Product>(`/api/v1/products/${productId}`);
+}
+
+export async function fetchSellerContact(token: string, productId: number): Promise<SellerContact> {
+  return request<SellerContact>(`/api/v1/products/${productId}/seller-contact`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 }
 
 export async function registerUser(payload: { name: string; email: string; password: string }) {
@@ -113,6 +121,15 @@ export async function updateProduct(
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteProduct(token: string, productId: number): Promise<void> {
+  return request<void>(`/api/v1/products/${productId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 }
 

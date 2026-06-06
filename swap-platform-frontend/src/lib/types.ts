@@ -1,5 +1,6 @@
 export type Product = {
   id: number;
+  owner_id: number;
   title: string;
   description: string;
   category: string;
@@ -18,6 +19,11 @@ export type WishlistItem = {
   desired_point_price: number;
   created_at: string;
   updated_at: string;
+};
+
+export type SellerContact = {
+  name: string;
+  email: string;
 };
 
 export type LoginResponse = {

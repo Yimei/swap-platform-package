@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react';
 import { ProductList } from '@/components/ProductList';
 import type { Product } from '@/lib/types';
+import { AUTH_CHANGED_EVENT, getCurrentUserId } from '@/lib/storage';
 import { fetchProducts } from '@/services/api';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   useEffect(() => {
     async function loadProducts() {
@@ -23,7 +25,17 @@ export default function ProductsPage() {
     }
 
     loadProducts();
+
+    function syncCurrentUser() {
+      setCurrentUserId(getCurrentUserId());
+    }
+
+    syncCurrentUser();
+    window.addEventListener(AUTH_CHANGED_EVENT, syncCurrentUser);
+    return () => window.removeEventListener(AUTH_CHANGED_EVENT, syncCurrentUser);
   }, []);
+
+  const visibleProducts = currentUserId ? products.filter((product) => product.owner_id !== currentUserId) : products;
 
   return (
     <div className="space-y-6">
@@ -41,7 +53,7 @@ export default function ProductsPage() {
           讀取商品失敗：{error}
         </div>
       ) : (
-        <ProductList products={products} />
+        <ProductList products={visibleProducts} emptyMessage="目前沒有其他使用者的商品。" />
       )}
     </div>
   );

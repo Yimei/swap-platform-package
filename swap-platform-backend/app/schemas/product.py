@@ -19,6 +19,7 @@ class ProductUpdate(ProductCreate):
 
 class ProductResponse(BaseModel):
     id: int
+    owner_id: int
     title: str
     description: str
     category: str
@@ -31,3 +32,8 @@ class ProductResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class SellerContactResponse(BaseModel):
+    name: str
+    email: str

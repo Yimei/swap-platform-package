@@ -31,4 +31,10 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
 
 @router.get('/me', response_model=UserProfileResponse)
 def get_profile(current_user: User = Depends(get_current_user)):
-    return current_user
+    return UserProfileResponse(
+        id=current_user.id,
+        name=current_user.name,
+        email=current_user.email,
+        coin_balance=current_user.coin_balance,
+        products=[product for product in current_user.products if product.is_active],
+    )
