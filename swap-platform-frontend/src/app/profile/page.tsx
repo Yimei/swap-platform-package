@@ -69,7 +69,7 @@ export default function ProfilePage() {
             <h2 className="text-2xl font-bold text-neutral-900">Your products</h2>
             <p className="mt-1 text-neutral-700">Items you have listed for swap.</p>
           </div>
-          <Link href="/" className="rounded-2xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white">
+          <Link href="/products/new" className="rounded-2xl bg-neutral-900 px-4 py-2 text-sm font-semibold text-white">
             Add product
           </Link>
         </div>
