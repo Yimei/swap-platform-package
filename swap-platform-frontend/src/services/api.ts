@@ -74,6 +74,26 @@ export async function createProduct(
   });
 }
 
+export async function uploadProductImage(token: string, image: File): Promise<{ image_url: string }> {
+  const formData = new FormData();
+  formData.append('image', image);
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/uploads/product-image`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || 'Image upload failed');
+  }
+
+  return response.json() as Promise<{ image_url: string }>;
+}
+
 export async function updateProduct(
   token: string,
   productId: number,
