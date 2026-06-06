@@ -41,7 +41,7 @@ export default function ProfilePage() {
     return (
       <section className="space-y-4 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-rose-700">
         <p>{error || 'Profile not found.'}</p>
-        <Link href="/" className="inline-flex rounded-2xl bg-rose-900 px-4 py-2 text-sm font-semibold text-white">
+        <Link href="/login" className="inline-flex rounded-2xl bg-rose-900 px-4 py-2 text-sm font-semibold text-white">
           Go to login
         </Link>
       </section>

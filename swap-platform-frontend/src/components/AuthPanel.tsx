@@ -74,7 +74,7 @@ export function AuthPanel() {
 
   return (
     <section className="grid gap-6 lg:grid-cols-3">
-      <form onSubmit={handleRegister} className="space-y-4 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <form id="register" onSubmit={handleRegister} className="scroll-mt-24 space-y-4 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h3 className="text-xl font-semibold text-neutral-900">註冊</h3>
         <input className="w-full rounded-2xl border border-neutral-300 px-4 py-3" placeholder="姓名" value={registerForm.name} onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })} required />
         <input className="w-full rounded-2xl border border-neutral-300 px-4 py-3" placeholder="Email" type="email" value={registerForm.email} onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })} required />
@@ -82,7 +82,7 @@ export function AuthPanel() {
         <button disabled={loading} className="w-full rounded-2xl bg-neutral-900 px-4 py-3 font-semibold text-white">建立帳號</button>
       </form>
 
-      <form onSubmit={handleLogin} className="space-y-4 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <form id="login" onSubmit={handleLogin} className="scroll-mt-24 space-y-4 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h3 className="text-xl font-semibold text-neutral-900">登入</h3>
         <input className="w-full rounded-2xl border border-neutral-300 px-4 py-3" placeholder="Email" type="email" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} required />
         <input className="w-full rounded-2xl border border-neutral-300 px-4 py-3" placeholder="密碼" type="password" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} required />

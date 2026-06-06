@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@/lib/config';
-import type { LoginResponse, Product, UserProfile } from '@/lib/types';
+import type { LoginResponse, Product, UserProfile, WishlistItem } from '@/lib/types';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -14,6 +14,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   if (!response.ok) {
     const text = await response.text();
     throw new Error(text || 'Request failed');
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   return response.json() as Promise<T>;
@@ -89,5 +93,35 @@ export async function updateProduct(
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchWishlistItems(token: string): Promise<WishlistItem[]> {
+  return request<WishlistItem[]>('/api/v1/wishlist', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export async function createWishlistItem(
+  token: string,
+  payload: { item_name: string; desired_point_price: number },
+): Promise<WishlistItem> {
+  return request<WishlistItem>('/api/v1/wishlist', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteWishlistItem(token: string, itemId: number): Promise<void> {
+  return request<void>(`/api/v1/wishlist/${itemId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 }

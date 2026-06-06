@@ -1,4 +1,3 @@
-import { AuthPanel } from '@/components/AuthPanel';
 import { FeatureGrid } from '@/components/FeatureGrid';
 import { Hero } from '@/components/Hero';
 
@@ -40,15 +39,6 @@ export default async function HomePage() {
     <div className="space-y-10">
       <Hero />
       <FeatureGrid />
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-3xl font-bold text-neutral-900">API 互動測試區</h2>
-          <p className="mt-2 text-neutral-700">
-            這裡可直接測註冊、登入，以及用 JWT 建立商品，方便你本地驗證前後端是否接通。
-          </p>
-        </div>
-        <AuthPanel />
-      </section>
 	  
 	  <div style={{ padding: "20px" }}>
       <h1>商品列表</h1>

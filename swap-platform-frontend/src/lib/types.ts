@@ -12,6 +12,14 @@ export type Product = {
   updated_at: string;
 };
 
+export type WishlistItem = {
+  id: number;
+  item_name: string;
+  desired_point_price: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type LoginResponse = {
   access_token: string;
   token_type: string;
