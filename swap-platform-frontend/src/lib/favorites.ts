@@ -3,6 +3,7 @@ import { getToken } from '@/lib/storage';
 const FAVORITE_PRODUCT_IDS_KEY = 'swap_platform_favorite_product_ids';
 
 export const FAVORITES_CHANGED_EVENT = 'swap-platform-favorites-changed';
+export const MAX_FAVORITE_PRODUCTS = 30;
 
 function getStorageKey(): string | null {
   const token = getToken();
@@ -41,6 +42,9 @@ export function toggleFavoriteProduct(productId: number): boolean {
 
   const favoriteIds = getFavoriteProductIds();
   const isFavorite = favoriteIds.includes(productId);
+  if (!isFavorite && favoriteIds.length >= MAX_FAVORITE_PRODUCTS) {
+    throw new Error(`收藏商品最多 ${MAX_FAVORITE_PRODUCTS} 件。`);
+  }
   const nextIds = isFavorite ? favoriteIds.filter((id) => id !== productId) : [...favoriteIds, productId];
 
   localStorage.setItem(storageKey, JSON.stringify(nextIds));

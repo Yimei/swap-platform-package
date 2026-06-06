@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ProductList } from '@/components/ProductList';
-import { FAVORITES_CHANGED_EVENT, getFavoriteProductIds } from '@/lib/favorites';
+import { FAVORITES_CHANGED_EVENT, getFavoriteProductIds, MAX_FAVORITE_PRODUCTS } from '@/lib/favorites';
 import type { Product, UserProfile } from '@/lib/types';
 import { getToken } from '@/lib/storage';
 import { fetchProducts, fetchUserProfile } from '@/services/api';
@@ -114,7 +114,8 @@ export default function ProfilePage() {
       <section className="space-y-4">
         <div>
           <h2 className="text-2xl font-bold text-neutral-900">我的收藏</h2>
-          <p className="mt-1 text-neutral-700">你收藏的商品會顯示在這裡。</p>
+          <p className="mt-1 text-neutral-700">你收藏的商品會顯示在這裡，最多 {MAX_FAVORITE_PRODUCTS} 件。</p>
+          <p className="mt-1 text-sm font-semibold text-emerald-700">{favoriteProducts.length} / {MAX_FAVORITE_PRODUCTS}</p>
         </div>
         <ProductList products={favoriteProducts} emptyMessage="目前還沒有收藏商品。" />
       </section>

@@ -65,9 +65,13 @@ function ProductDetailContent() {
       return;
     }
 
-    const nextIsFavorite = toggleFavoriteProduct(product.id);
-    setIsFavorite(nextIsFavorite);
-    setFavoriteMessage(nextIsFavorite ? '已加入我的收藏。' : '已取消收藏。');
+    try {
+      const nextIsFavorite = toggleFavoriteProduct(product.id);
+      setIsFavorite(nextIsFavorite);
+      setFavoriteMessage(nextIsFavorite ? '已加入我的收藏。' : '已取消收藏。');
+    } catch (err) {
+      setFavoriteMessage(err instanceof Error ? err.message : '無法收藏商品。');
+    }
   }
 
   return (
