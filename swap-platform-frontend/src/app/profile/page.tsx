@@ -2,12 +2,15 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import type { UserProfile } from '@/lib/types';
+import { ProductList } from '@/components/ProductList';
+import { FAVORITES_CHANGED_EVENT, getFavoriteProductIds } from '@/lib/favorites';
+import type { Product, UserProfile } from '@/lib/types';
 import { getToken } from '@/lib/storage';
-import { fetchUserProfile } from '@/services/api';
+import { fetchProducts, fetchUserProfile } from '@/services/api';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -21,8 +24,10 @@ export default function ProfilePage() {
       }
 
       try {
-        const data = await fetchUserProfile(token);
-        setProfile(data);
+        const [profileData, products] = await Promise.all([fetchUserProfile(token), fetchProducts()]);
+        setProfile(profileData);
+        const favoriteIds = new Set(getFavoriteProductIds());
+        setFavoriteProducts(products.filter((product) => favoriteIds.has(product.id)));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unable to load profile.');
       } finally {
@@ -31,6 +36,9 @@ export default function ProfilePage() {
     }
 
     loadProfile();
+
+    window.addEventListener(FAVORITES_CHANGED_EVENT, loadProfile);
+    return () => window.removeEventListener(FAVORITES_CHANGED_EVENT, loadProfile);
   }, []);
 
   if (loading) {
@@ -101,6 +109,14 @@ export default function ProfilePage() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold text-neutral-900">我的收藏</h2>
+          <p className="mt-1 text-neutral-700">你收藏的商品會顯示在這裡。</p>
+        </div>
+        <ProductList products={favoriteProducts} emptyMessage="目前還沒有收藏商品。" />
       </section>
     </div>
   );

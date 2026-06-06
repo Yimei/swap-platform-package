@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { Product } from '@/lib/types';
+import { isFavoriteProduct, toggleFavoriteProduct } from '@/lib/favorites';
+import { getToken } from '@/lib/storage';
 import { fetchProduct } from '@/services/api';
 
 function ProductDetailContent() {
@@ -13,6 +15,8 @@ function ProductDetailContent() {
   const [product, setProduct] = useState<Product | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteMessage, setFavoriteMessage] = useState('');
 
   useEffect(() => {
     async function loadProduct() {
@@ -25,6 +29,7 @@ function ProductDetailContent() {
       try {
         const data = await fetchProduct(productId);
         setProduct(data);
+        setIsFavorite(isFavoriteProduct(productId));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unable to load product.');
       } finally {
@@ -52,6 +57,19 @@ function ProductDetailContent() {
 
   const imageSrc = product.image_url || '/placeholder-product.svg';
 
+  function handleFavorite() {
+    if (!product) return;
+
+    if (!getToken()) {
+      setFavoriteMessage('請先登入才能收藏商品。');
+      return;
+    }
+
+    const nextIsFavorite = toggleFavoriteProduct(product.id);
+    setIsFavorite(nextIsFavorite);
+    setFavoriteMessage(nextIsFavorite ? '已加入我的收藏。' : '已取消收藏。');
+  }
+
   return (
     <article className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="relative min-h-[360px] overflow-hidden rounded-2xl bg-neutral-100">
@@ -73,6 +91,19 @@ function ProductDetailContent() {
           <DetailItem label="Category" value={product.category} />
           <DetailItem label="Condition" value={product.condition} />
           <DetailItem label="City" value={product.city} />
+        </div>
+
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={handleFavorite}
+            className={isFavorite
+              ? 'rounded-2xl border border-rose-300 bg-rose-50 px-5 py-3 font-semibold text-rose-700'
+              : 'rounded-2xl bg-neutral-900 px-5 py-3 font-semibold text-white'}
+          >
+            {isFavorite ? '取消收藏' : '收藏商品'}
+          </button>
+          {favoriteMessage ? <p className="text-sm text-neutral-600">{favoriteMessage}</p> : null}
         </div>
       </section>
     </article>
