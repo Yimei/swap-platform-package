@@ -141,18 +141,20 @@ function ProductDetailContent() {
           <DetailItem label="City" value={product.city} />
         </div>
 
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={handleFavorite}
-            className={isFavorite
-              ? 'rounded-2xl border border-rose-300 bg-rose-50 px-5 py-3 font-semibold text-rose-700'
-              : 'rounded-2xl bg-neutral-900 px-5 py-3 font-semibold text-white'}
-          >
-            {isFavorite ? '取消收藏' : '收藏商品'}
-          </button>
-          {favoriteMessage ? <p className="text-sm text-neutral-600">{favoriteMessage}</p> : null}
-        </div>
+        {currentUserId !== product.owner_id ? (
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={handleFavorite}
+              className={isFavorite
+                ? 'rounded-2xl border border-rose-300 bg-rose-50 px-5 py-3 font-semibold text-rose-700'
+                : 'rounded-2xl bg-neutral-900 px-5 py-3 font-semibold text-white'}
+            >
+              {isFavorite ? '取消收藏' : '收藏商品'}
+            </button>
+            {favoriteMessage ? <p className="text-sm text-neutral-600">{favoriteMessage}</p> : null}
+          </div>
+        ) : null}
 
         {currentUserId !== product.owner_id ? (
           <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">

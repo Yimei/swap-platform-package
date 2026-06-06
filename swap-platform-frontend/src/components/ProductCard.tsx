@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { FAVORITES_CHANGED_EVENT, isFavoriteProduct, toggleFavoriteProduct } from '@/lib/favorites';
-import { getToken } from '@/lib/storage';
+import { getCurrentUserId, getToken } from '@/lib/storage';
 import type { Product } from '@/lib/types';
 
 export function ProductCard({ product }: { product: Product }) {
@@ -66,15 +66,17 @@ export function ProductCard({ product }: { product: Product }) {
           >
             View details
           </Link>
-          <button
-            type="button"
-            onClick={handleFavorite}
-            className={isFavorite
-              ? 'rounded-2xl border border-rose-300 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700'
-              : 'rounded-2xl border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-700'}
-          >
-            {isFavorite ? '取消收藏' : '收藏'}
-          </button>
+          {getCurrentUserId() !== product.owner_id ? (
+            <button
+              type="button"
+              onClick={handleFavorite}
+              className={isFavorite
+                ? 'rounded-2xl border border-rose-300 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700'
+                : 'rounded-2xl border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-700'}
+            >
+              {isFavorite ? '取消收藏' : '收藏'}
+            </button>
+          ) : null}
         </div>
         {favoriteMessage ? <p className="text-sm text-neutral-600">{favoriteMessage}</p> : null}
       </div>

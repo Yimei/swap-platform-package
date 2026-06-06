@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ProductList } from '@/components/ProductList';
@@ -121,12 +122,23 @@ export default function ProfilePage() {
           <div className="grid gap-4">
             {profile.products.map((product) => (
               <article key={product.id} className="flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-5 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-neutral-900">{product.title}</h3>
-                  <p className="mt-1 text-sm text-neutral-600">
-                    {product.category} / {product.condition} / {product.city}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-emerald-700">{product.point_price} coins</p>
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-neutral-100">
+                    <Image
+                      src={product.image_url || '/placeholder-product.svg'}
+                      alt={product.title}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-lg font-semibold text-neutral-900">{product.title}</h3>
+                    <p className="mt-1 text-sm text-neutral-600">
+                      {product.category} / {product.condition} / {product.city}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-emerald-700">{product.point_price} coins</p>
+                  </div>
                 </div>
                 <div className="flex gap-3">
                   <Link href={`/products/detail?id=${product.id}`} className="rounded-2xl border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-800">

@@ -1,11 +1,12 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
-import { Suspense, useEffect, useState } from 'react';
+import { ClipboardEvent, Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { Product } from '@/lib/types';
 import { getToken } from '@/lib/storage';
-import { fetchProduct, updateProduct } from '@/services/api';
+import { fetchProduct, updateProduct, uploadProductImage } from '@/services/api';
 
 type ProductForm = {
   title: string;
@@ -47,6 +48,7 @@ function ProductEditContent() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     async function loadProduct() {
@@ -94,6 +96,51 @@ function ProductEditContent() {
     }
   }
 
+  async function uploadImage(image: File) {
+    const token = getToken();
+    if (!token) {
+      setError('請先登入才能上傳照片。');
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+    setMessage('');
+    try {
+      const result = await uploadProductImage(token, image);
+      setForm((currentForm) => ({ ...currentForm, image_url: result.image_url }));
+      setMessage('照片上傳成功，請儲存變更。');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '無法上傳照片。');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleImageFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const image = event.target.files?.[0];
+    if (!image) return;
+
+    try {
+      await uploadImage(image);
+    } finally {
+      event.target.value = '';
+    }
+  }
+
+  function handlePaste(event: ClipboardEvent<HTMLDivElement>) {
+    const imageItem = Array.from(event.clipboardData.items).find((item) => item.type.startsWith('image/'));
+    const image = imageItem?.getAsFile();
+
+    if (!image) {
+      setError('剪貼簿中沒有可上傳的圖片。');
+      return;
+    }
+
+    event.preventDefault();
+    void uploadImage(image);
+  }
+
   if (loading) {
     return <div className="rounded-2xl border border-neutral-200 bg-white px-5 py-4">Loading product...</div>;
   }
@@ -133,7 +180,20 @@ function ProductEditContent() {
 
       <input className="w-full rounded-2xl border border-neutral-300 px-4 py-3" placeholder="Image URL" value={form.image_url} onChange={(event) => setForm({ ...form, image_url: event.target.value })} />
 
-      <button disabled={saving} className="rounded-2xl bg-neutral-900 px-5 py-3 font-semibold text-white disabled:opacity-60">
+      <div onPaste={handlePaste} tabIndex={0} className="space-y-3 rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 p-4 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100">
+        <span className="block text-sm font-semibold text-neutral-700">從電腦選擇照片，或點擊此區域後按 Ctrl+V 貼上圖片</span>
+        <span className="block text-sm text-neutral-500">支援 JPEG、PNG、WebP、GIF，最大 5MB。</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleImageFile} disabled={uploading || saving} className="block w-full text-sm text-neutral-700" />
+        {uploading ? <span className="block text-sm text-emerald-700">照片上傳中...</span> : null}
+      </div>
+
+      {form.image_url ? (
+        <div className="relative h-64 overflow-hidden rounded-2xl bg-neutral-100">
+          <Image src={form.image_url} alt="商品圖片預覽" fill className="object-contain" unoptimized />
+        </div>
+      ) : null}
+
+      <button disabled={saving || uploading} className="rounded-2xl bg-neutral-900 px-5 py-3 font-semibold text-white disabled:opacity-60">
         {saving ? 'Saving...' : 'Save changes'}
       </button>
     </form>
